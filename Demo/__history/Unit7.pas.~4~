@@ -1,0 +1,55 @@
+unit Unit7;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, DTSysInfo;
+
+type
+  TForm7 = class(TForm)
+    Memo1: TMemo;
+    Button1: TButton;
+    DTSysinfo1: TDTSysinfo;
+    procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form7: TForm7;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm7.Button1Click(Sender: TObject);
+begin
+  Memo1.Lines.add('TPJComputerInfo Static Methods');
+  Memo1.Lines.add('Computer Name', DTSysinfo1.ComputerName);
+  Memo1.Lines.add('User Name', TPJComputerInfo.UserName);
+  Memo1.Lines.add('MAC Address', TPJComputerInfo.MACAddress);
+  Memo1.Lines.add('Processor Count', Integer(TPJComputerInfo.ProcessorCount));
+  Memo1.Lines.add('Processor Architecture', cProcessors[TPJComputerInfo.Processor]);
+  Memo1.Lines.add('Processor Identifier', TPJComputerInfo.ProcessorIdentifier);
+  Memo1.Lines.add('Processor Name', TPJComputerInfo.ProcessorName);
+  Memo1.Lines.add('Processor Speed (MHz)', TPJComputerInfo.ProcessorSpeedMHz);
+  Memo1.Lines.add('Is 64 Bit?', TPJComputerInfo.Is64Bit);
+  Memo1.Lines.add('Is Network Present?', TPJComputerInfo.IsNetworkPresent);
+  Memo1.Lines.add('Boot Mode', cBootModes[TPJComputerInfo.BootMode]);
+  Memo1.Lines.add('Is Administrator?', TPJComputerInfo.IsAdmin);
+  Memo1.Lines.add('Is UAC active?', TPJComputerInfo.IsUACActive);
+  Memo1.Lines.add('BIOS Vender', TPJComputerInfo.BiosVendor);
+  Memo1.Lines.add('System Manufacturer', TPJComputerInfo.SystemManufacturer);
+  Memo1.Lines.add('System Product Name', TPJComputerInfo.SystemProductName);
+end;
+
+procedure TForm7.FormCreate(Sender: TObject);
+begin
+       Memo1.Lines.Clear;
+end;
+
+end.

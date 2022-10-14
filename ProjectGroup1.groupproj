@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{2C9D175E-47C0-4A91-AE78-C41963956DC2}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Sysinfo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demo\Project4.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Sysinfo">
+        <MSBuild Projects="Sysinfo.dproj"/>
+    </Target>
+    <Target Name="Sysinfo:Clean">
+        <MSBuild Projects="Sysinfo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Sysinfo:Make">
+        <MSBuild Projects="Sysinfo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Project4">
+        <MSBuild Projects="Demo\Project4.dproj"/>
+    </Target>
+    <Target Name="Project4:Clean">
+        <MSBuild Projects="Demo\Project4.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Project4:Make">
+        <MSBuild Projects="Demo\Project4.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Sysinfo;Project4"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Sysinfo:Clean;Project4:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Sysinfo:Make;Project4:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
