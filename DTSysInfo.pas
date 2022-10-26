@@ -427,8 +427,17 @@ begin
 end;
 
 function TDTSysinfo.UsuarioLogado: string;
+var
+  nsize: Cardinal;
+  UserName: string;
 begin
-
+  nsize := 255;
+  SetLength(UserName,nsize);
+  if GetUserName(PChar(UserName), nsize) then
+  begin
+    SetLength(UserName,nsize-1);
+    Result := UserName;
+  end;
 end;
 
 end.
