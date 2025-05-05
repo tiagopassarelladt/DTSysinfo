@@ -7,10 +7,12 @@ uses
   Winapi.WinSock,System.Win.Registry;
 
 type TArmazenamento = record
-      Total:String;
-      Livre:String;
-      EmUso:String;
-      Tipo:String;
+      Total: String;
+      Livre: String;
+      EmUso: String;
+      Tipo: String;
+      Modelo: String;
+      Serial: String;
 end;
 
 type
@@ -26,6 +28,8 @@ type
     FiMemoriaEmUso: real;
     FiTipoConexao: integer;
     FiArmazenamentoLivre: real;
+    FModeloDiscoPrincipal: string;
+    FNumSerieDiscoPrincipal: string;
     procedure SetArmazenamentoHD(const Value: TArmazenamento);
     procedure SetFHDRecomendado(const Value: STRING);
     procedure SetiArmazenamentoEmUso(const Value: real);
@@ -36,6 +40,11 @@ type
     procedure SetiMemoriaTotal(const Value: real);
     procedure SetiTipoArmazenamento(const Value: Integer);
     procedure SetiTipoConexao(const Value: integer);
+    procedure SetModeloDiscoPrincipal(const Value: string);
+    procedure SetNumSerieDiscoPrincipal(const Value: string);
+    function HDFisicalSerial: string;
+    function HDModelo: string;
+    function DiagnosticoDiscoDetalhado: TStringList;
 
   protected
 
@@ -70,16 +79,18 @@ type
     function UsuarioLogado : string;
 
   published
-    property ArmazenamentoHD:TArmazenamento read FArmazenamentoHD write SetArmazenamentoHD;
-    property FHDRecomendado:string read FFHDRecomendado write SetFHDRecomendado;
-    property iArmazenamentoTotal:real read FiArmazenamentoTotal write SetiArmazenamentoTotal;
-    property iArmazenamentoEmUso:real read FiArmazenamentoEmUso write SetiArmazenamentoEmUso;
-    property iArmazenamentoLivre:real read FiArmazenamentoLivre write SetiArmazenamentoLivre;
-    property iMemoriaTotal:real read FiMemoriaTotal write SetiMemoriaTotal;
-    property iMemoriaLivre:real read FiMemoriaLivre write SetiMemoriaLivre;
-    property iMemoriaEmUso:real read FiMemoriaEmUso write SetiMemoriaEmUso;
-    property iTipoArmazenamento:Integer read FiTipoArmazenamento write SetiTipoArmazenamento;
-    property iTipoConexao:integer read FiTipoConexao write SetiTipoConexao;
+    property ArmazenamentoHD: TArmazenamento read FArmazenamentoHD write SetArmazenamentoHD;
+    property FHDRecomendado: string read FFHDRecomendado write SetFHDRecomendado;
+    property iArmazenamentoTotal: real read FiArmazenamentoTotal write SetiArmazenamentoTotal;
+    property iArmazenamentoEmUso: real read FiArmazenamentoEmUso write SetiArmazenamentoEmUso;
+    property iArmazenamentoLivre: real read FiArmazenamentoLivre write SetiArmazenamentoLivre;
+    property iMemoriaTotal: real read FiMemoriaTotal write SetiMemoriaTotal;
+    property iMemoriaLivre: real read FiMemoriaLivre write SetiMemoriaLivre;
+    property iMemoriaEmUso: real read FiMemoriaEmUso write SetiMemoriaEmUso;
+    property iTipoArmazenamento: Integer read FiTipoArmazenamento write SetiTipoArmazenamento;
+    property iTipoConexao: integer read FiTipoConexao write SetiTipoConexao;
+    property NumSerieDiscoPrincipal: string read FNumSerieDiscoPrincipal write SetNumSerieDiscoPrincipal;
+    property ModeloDiscoPrincipal: string read FModeloDiscoPrincipal write SetModeloDiscoPrincipal;
 
   end;
 
@@ -92,6 +103,7 @@ const
    TIPOS_CONEXAO: array[0..2] of string = ('Indefinida', 'Lan', 'Wi-Fi');
    _HDD = 3;
    _SSD = 4;
+   _NVME = 5;
 
 procedure Register;
 begin
@@ -100,23 +112,223 @@ end;
 
 { TDTSysinfo }
 
+function TDTSysinfo.HDFisicalSerial: string;
+var
+  FSWbemLocator: OLEVariant;
+  FWMIService: OLEVariant;
+  FWbemObjectSet: OLEVariant;
+  FWbemObject: OLEVariant;
+  oEnum: IEnumvariant;
+  iValue: LongWord;
+begin
+  Result := '';
+  try
+    FSWbemLocator := CreateOleObject('WbemScripting.SWbemLocator');
+    FWMIService := FSWbemLocator.ConnectServer('localhost', 'root\CIMV2', '', '');
+    FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM Win32_DiskDrive WHERE Index = 0');
+    oEnum := IUnknown(FWbemObjectSet._NewEnum) as IEnumvariant;
+
+    if oEnum.Next(1, FWbemObject, iValue) = 0 then
+    begin
+      if not VarIsNull(FWbemObject.SerialNumber) then
+        Result := Trim(FWbemObject.SerialNumber);
+    end;
+  except
+    Result := '';
+  end;
+
+  // Limpa as variáveis OLE
+  if not VarIsEmpty(FWbemObject) then FWbemObject := Unassigned;
+  if not VarIsEmpty(FWbemObjectSet) then FWbemObjectSet := Unassigned;
+  if not VarIsEmpty(FWMIService) then FWMIService := Unassigned;
+  if not VarIsEmpty(FSWbemLocator) then FSWbemLocator := Unassigned;
+end;
+
+function TDTSysinfo.HDModelo: string;
+var
+  FSWbemLocator: OLEVariant;
+  FWMIService: OLEVariant;
+  FWbemObjectSet: OLEVariant;
+  FWbemObject: OLEVariant;
+  oEnum: IEnumvariant;
+  iValue: LongWord;
+  PNPDeviceID: string;
+begin
+  Result := '';
+  try
+    FSWbemLocator := CreateOleObject('WbemScripting.SWbemLocator');
+    FWMIService := FSWbemLocator.ConnectServer('localhost', 'root\CIMV2', '', '');
+    FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM Win32_DiskDrive WHERE Index = 0');
+    oEnum := IUnknown(FWbemObjectSet._NewEnum) as IEnumvariant;
+
+    if oEnum.Next(1, FWbemObject, iValue) = 0 then
+    begin
+      if not VarIsNull(FWbemObject.Model) then
+        Result := Trim(FWbemObject.Model);
+
+      // Para dispositivos NVMe, às vezes o PNPDeviceID contém informações mais precisas
+      if (Result = '') or (Pos('NVME', UpperCase(Result)) > 0) then
+      begin
+        if not VarIsNull(FWbemObject.PNPDeviceID) then
+        begin
+          PNPDeviceID := Trim(FWbemObject.PNPDeviceID);
+
+          // Extrai o modelo do PNPDeviceID para dispositivos NVMe
+          // Geralmente está no formato NVME\VEN_XXXX&DEV_YYYY&SUBSYS_ZZZZ
+          if Pos('NVME\', UpperCase(PNPDeviceID)) > 0 then
+          begin
+            // Poderia extrair informações mais detalhadas do PNPDeviceID se necessário
+            if Result = '' then
+              Result := Copy(PNPDeviceID, 6, Length(PNPDeviceID) - 5); // Remove o prefixo "NVME\"
+          end;
+        end;
+      end;
+    end;
+  except
+    Result := 'Erro ao obter modelo';
+  end;
+
+  // Limpa as variáveis OLE
+  if not VarIsEmpty(FWbemObject) then FWbemObject := Unassigned;
+  if not VarIsEmpty(FWbemObjectSet) then FWbemObjectSet := Unassigned;
+  if not VarIsEmpty(FWMIService) then FWMIService := Unassigned;
+  if not VarIsEmpty(FSWbemLocator) then FSWbemLocator := Unassigned;
+end;
+
+function VarToInt(const AVariant: Variant): INT64;
+begin
+  Result := StrToIntDef(Trim(VarToStr(AVariant)), 0);
+end;
+
+function TDTSysinfo.DiagnosticoDiscoDetalhado: TStringList;
+var
+  FSWbemLocator, FWMIService, FWbemObjectSet, FWbemObject, FStorageObj: OLEVariant;
+  oEnum, oStorageEnum: IEnumvariant;
+  iValue: LongWord;
+  PNPDeviceID, _Interface: string;
+  Lista: TStringList;
+begin
+  Lista := TStringList.Create;
+
+  try
+    Lista.Add('=== Diagnóstico detalhado do disco principal ===');
+
+    // Informações do Win32_DiskDrive
+    FSWbemLocator := CreateOleObject('WbemScripting.SWbemLocator');
+    FWMIService := FSWbemLocator.ConnectServer('localhost', 'root\CIMV2', '', '');
+    FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM Win32_DiskDrive WHERE Index = 0');
+    oEnum := IUnknown(FWbemObjectSet._NewEnum) as IEnumvariant;
+
+    if oEnum.Next(1, FWbemObject, iValue) = 0 then
+    begin
+      Lista.Add('--- Informações WMI básicas ---');
+
+      if not VarIsNull(FWbemObject.Model) then
+        Lista.Add('Modelo: ' + Trim(FWbemObject.Model));
+
+      if not VarIsNull(FWbemObject.SerialNumber) then
+        Lista.Add('Número de Série: ' + Trim(FWbemObject.SerialNumber));
+
+      if not VarIsNull(FWbemObject.InterfaceType) then
+      begin
+        _Interface := Trim(FWbemObject.InterfaceType);
+        Lista.Add('Interface: ' + _Interface);
+      end;
+
+      if not VarIsNull(FWbemObject.PNPDeviceID) then
+      begin
+        PNPDeviceID := Trim(FWbemObject.PNPDeviceID);
+        Lista.Add('PNP Device ID: ' + PNPDeviceID);
+
+        if Pos('NVME', UpperCase(PNPDeviceID)) > 0 then
+          Lista.Add('* Detectado como NVMe pelo PNP Device ID');
+      end;
+    end;
+
+    // Informações da Storage API
+    try
+      Lista.Add('');
+      Lista.Add('--- Informações Windows Storage API ---');
+
+      FWMIService := FSWbemLocator.ConnectServer('localhost', 'root\Microsoft\Windows\Storage', '', '');
+      FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM MSFT_PhysicalDisk WHERE DeviceID = 0');
+      oStorageEnum := IUnknown(FWbemObjectSet._NewEnum) as IEnumvariant;
+
+      if oStorageEnum.Next(1, FStorageObj, iValue) = 0 then
+      begin
+        if not VarIsNull(FStorageObj.MediaType) then
+        begin
+          Lista.Add('MediaType: ' + VarToStr(FStorageObj.MediaType));
+
+          case VarToInt(FStorageObj.MediaType) of
+            3: Lista.Add('* Detectado como HDD pelo MediaType');
+            4: Lista.Add('* Detectado como SSD pelo MediaType');
+            5: Lista.Add('* Detectado como NVMe pelo MediaType');
+          else
+            Lista.Add('* Tipo desconhecido pelo MediaType');
+          end;
+        end;
+
+        if not VarIsNull(FStorageObj.BusType) then
+        begin
+          Lista.Add('BusType: ' + VarToStr(FStorageObj.BusType));
+
+          if VarToInt(FStorageObj.BusType) = 17 then
+            Lista.Add('* BusType 17 (PCIe) geralmente indica NVMe');
+        end;
+      end;
+    except
+      Lista.Add('Erro ao acessar Storage API - possivelmente não disponível neste sistema');
+    end;
+
+    // Conclusão do diagnóstico
+    Lista.Add('');
+    Lista.Add('=== Resultado da detecção ===');
+    Lista.Add('Tipo detectado: ' + TipoArmazenamentoDescricao(TipoArmazenamento));
+    Lista.Add('Modelo detectado: ' + HDModelo);
+    Lista.Add('Número de Série detectado: ' + HDFisicalSerial);
+  except
+    on E: Exception do
+      Lista.Add('Erro durante diagnóstico: ' + E.Message);
+  end;
+
+  Result := Lista;
+end;
+
 function TDTSysinfo.Armazenamento: string;
 begin
-     FiTipoArmazenamento         := TipoArmazenamento;
-     FiArmazenamentoTotal        := (DiskSize(0)/(1024 * 1024));
-     FiArmazenamentoLivre        := (DiskFree(0)/(1024 * 1024));
-     FiArmazenamentoEmUso        := (FiArmazenamentoTotal - FiArmazenamentoLivre) / 1024;
-     FArmazenamentoHD.Total       := FormatFloat('###,###,##0 GB', FiArmazenamentoTotal) + ' / ' + TipoArmazenamentoDescricao(FiTipoArmazenamento);
-     FArmazenamentoHD.Livre       := FormatFloat('###,###,##0 GB', FiArmazenamentoLivre);
-     FArmazenamentoHD.EmUso       := FormatFloat('###,###,##0 GB', FiArmazenamentoEmUso);
-     FFHDRecomendado              := FormatFloat('###,###,##0 GB', 240);
-     FArmazenamentoHD.Tipo        := TipoArmazenamentoDescricao(FiTipoArmazenamento);
-     if (FiTipoArmazenamento = _SSD) then
-        //pnlStatusArmazenamento.Color := clGreen
-     else if (FiTipoArmazenamento = _HDD) and (FiArmazenamentoTotal < 240) then
-        //pnlStatusArmazenamento.Color := clRed;
-     if FiTipoArmazenamento <> 4 then
-       FHDRecomendado :=  FHDRecomendado + ' / ' + TipoArmazenamentoDescricao(4);
+   try
+     try
+         FiTipoArmazenamento := TipoArmazenamento;
+         FiArmazenamentoTotal := (DiskSize(0)/(1024 * 1024));
+         FiArmazenamentoLivre := (DiskFree(0)/(1024 * 1024));
+         FiArmazenamentoEmUso := (FiArmazenamentoTotal - FiArmazenamentoLivre) / 1024;
+
+         // Atualiza o número de série e modelo do disco principal
+         FNumSerieDiscoPrincipal := HDFisicalSerial;
+         FModeloDiscoPrincipal := HDModelo;
+
+         FArmazenamentoHD.Total := FormatFloat('###,###,##0 GB', FiArmazenamentoTotal) + ' / ' + TipoArmazenamentoDescricao(FiTipoArmazenamento);
+         FArmazenamentoHD.Livre := FormatFloat('###,###,##0 GB', FiArmazenamentoLivre);
+         FArmazenamentoHD.EmUso := FormatFloat('###,###,##0 GB', FiArmazenamentoEmUso);
+         FFHDRecomendado := FormatFloat('###,###,##0 GB', 240);
+         FArmazenamentoHD.Tipo := TipoArmazenamentoDescricao(FiTipoArmazenamento);
+         FArmazenamentoHD.Modelo := FModeloDiscoPrincipal;
+         FArmazenamentoHD.Serial := FNumSerieDiscoPrincipal;
+
+         if (FiTipoArmazenamento = _SSD) or (FiTipoArmazenamento = _NVME) then
+            // Se já é SSD ou NVMe, está ok
+         else if (FiTipoArmazenamento = _HDD) and (FiArmazenamentoTotal < 240) then
+            // HDD pequeno = ruim
+
+         // Recomendação para quem não tem SSD ou NVMe
+         if (FiTipoArmazenamento <> _SSD) and (FiTipoArmazenamento <> _NVME) then
+           FHDRecomendado := FHDRecomendado + ' / ' + TipoArmazenamentoDescricao(_SSD);
+     except
+         Result := 'NO';
+     end;
+   finally
+   end;
 end;
 
 function TDTSysinfo.BiosVendor: string;
@@ -241,7 +453,15 @@ end;
 
 function TDTSysinfo.ProductName: string;
 begin
-       Result := TDTOSInfo.ProductName;
+     try
+         try
+             Result := TDTOSInfo.ProductName;
+         except
+             Result := 'NO';
+         end;
+     finally
+
+     end;
 end;
 
 function TDTSysinfo.ProxyAtivo: Boolean;
@@ -318,6 +538,16 @@ begin
   FiTipoConexao := Value;
 end;
 
+procedure TDTSysinfo.SetModeloDiscoPrincipal(const Value: string);
+begin
+  FModeloDiscoPrincipal := Value;
+end;
+
+procedure TDTSysinfo.SetNumSerieDiscoPrincipal(const Value: string);
+begin
+  FNumSerieDiscoPrincipal := Value;
+end;
+
 function TDTSysinfo.SystemManufacturer: string;
 begin
        Result := TDTComputerInfo.SystemManufacturer
@@ -330,43 +560,93 @@ end;
 
 function TDTSysinfo.TipoArmazenamento: Integer;
 function VarToInt(const AVariant: Variant): INT64;
-   begin
-      Result := StrToIntDef(Trim(VarToStr(AVariant)), 0);
-   end;
+begin
+   Result := StrToIntDef(Trim(VarToStr(AVariant)), 0);
+end;
+
 const
    WbemUser = ''; WbemPassword = ''; WbemComputer = 'localhost';
    wbemFlagForwardOnly = $00000020;
 var
-   FSWbemLocator, FWMIService, FWbemObjectSet, FWbemObject : OLEVariant;
-   oEnum  : IEnumvariant;
-   iValue : LongWord;
-begin;
-   FSWbemLocator  := CreateOleObject('WbemScripting.SWbemLocator');
-   FWMIService    := FSWbemLocator.ConnectServer(WbemComputer, 'root\Microsoft\Windows\Storage', WbemUser, WbemPassword);
-   FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM MSFT_PhysicalDisk WHERE DeviceID = 0','WQL',wbemFlagForwardOnly);
-   oEnum          := IUnknown(FWbemObjectSet._NewEnum) as IEnumVariant;
-   Result := 0;
+   FSWbemLocator, FWMIService, FWbemObjectSet, FWbemObject, FWMIDiskDrive : OLEVariant;
+   oEnum: IEnumvariant;
+   iValue: LongWord;
+   Modelo, _Interface, PNPDeviceID: string;
+begin
+   // Valor padrão caso nada seja detectado
+   Result := _HDD;
+
    try
-      CoInitialize(nil);
-      try
-         while oEnum.Next(1, FWbemObject, iValue) = 0 do
+      // Primeiro verifica se é um dispositivo NVMe pelo PNP Device ID
+      FSWbemLocator := CreateOleObject('WbemScripting.SWbemLocator');
+      FWMIService := FSWbemLocator.ConnectServer('localhost', 'root\CIMV2', '', '');
+      FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM Win32_DiskDrive WHERE Index = 0');
+      oEnum := IUnknown(FWbemObjectSet._NewEnum) as IEnumvariant;
+
+      if oEnum.Next(1, FWbemObject, iValue) = 0 then
+      begin
+         // Verifica o PNPDeviceID pelo qual podemos detectar definitivamente um NVMe
+         if not VarIsNull(FWbemObject.PNPDeviceID) then
          begin
-            Result      := VarToInt(FWbemObject.MediaType);
-            FWbemObject := Unassigned;
+            PNPDeviceID := UpperCase(Trim(FWbemObject.PNPDeviceID));
+            if (Pos('NVME', PNPDeviceID) > 0) then
+            begin
+               Result := _NVME;
+               Exit; // Se encontrou NVMe no PNPDeviceID, encerra
+            end;
          end;
-      finally
-         CoUninitialize;
+
+         // Verifica pelo modelo e interface
+         if not VarIsNull(FWbemObject.Model) then
+            Modelo := UpperCase(Trim(FWbemObject.Model));
+
+         if not VarIsNull(FWbemObject.InterfaceType) then
+            _Interface := UpperCase(Trim(FWbemObject.InterfaceType));
+
+         // Determina o tipo baseado no modelo e interface
+         if (Pos('NVME', Modelo) > 0) or (Pos('PCIE', _Interface) > 0) then
+            Result := _NVME
+         else if (Pos('SSD', Modelo) > 0) then
+            Result := _SSD;
       end;
    except
-      Result := 0
+      // Se falhou no método anterior, tenta o Storage API
+   end;
+
+   // Se ainda não identificou definitivamente, tenta pela API Storage
+   if Result = _HDD then
+   try
+      FWMIService := FSWbemLocator.ConnectServer(WbemComputer, 'root\Microsoft\Windows\Storage', WbemUser, WbemPassword);
+      FWbemObjectSet := FWMIService.ExecQuery('SELECT * FROM MSFT_PhysicalDisk WHERE DeviceID = 0','WQL',wbemFlagForwardOnly);
+      oEnum := IUnknown(FWbemObjectSet._NewEnum) as IEnumVariant;
+
+      if oEnum.Next(1, FWbemObject, iValue) = 0 then
+      begin
+         if not VarIsNull(FWbemObject.MediaType) then
+         begin
+            Result := VarToInt(FWbemObject.MediaType);
+            if Result = 0 then
+               Result := _HDD; // Se não conseguiu determinar, assume HDD
+         end;
+
+         // Verifica se é um BusType PCIe, que geralmente indica NVMe
+         if (Result <> _NVME) and (not VarIsNull(FWbemObject.BusType)) then
+         begin
+            // BusType 17 é PCIe, que geralmente indica NVMe
+            if VarToInt(FWbemObject.BusType) = 17 then
+               Result := _NVME;
+         end;
+      end;
+   except
+      // Se falhou, mantém o resultado atual
    end;
 end;
-
 function TDTSysinfo.TipoArmazenamentoDescricao(const ATipo: Integer): string;
 begin
-    case ATipo of
+   case ATipo of
        3: Result := 'HDD';
        4: Result := 'SSD';
+       5: Result := 'NVMe';
     else
        Result := 'N/A';
     end;

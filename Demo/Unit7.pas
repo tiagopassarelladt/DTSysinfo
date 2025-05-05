@@ -49,6 +49,8 @@ begin
   Memo1.Lines.add('=============================================');
   DTSysinfo1.Armazenamento;
   Memo1.Lines.Add('Tipo de HD: '         + DTSysinfo1.ArmazenamentoHD.Tipo);
+  Memo1.Lines.Add('Modelo HD: '          + DTSysinfo1.ArmazenamentoHD.Modelo);
+  Memo1.Lines.Add('Num Serie Fisico: '   + DTSysinfo1.ArmazenamentoHD.Serial);
   Memo1.Lines.Add('Espaço Total: '       + DTSysinfo1.ArmazenamentoHD.Total);
   Memo1.Lines.Add('Espaço Livre: '       + DTSysinfo1.ArmazenamentoHD.Livre);
   Memo1.Lines.Add('Espaço Usado: '       + DTSysinfo1.ArmazenamentoHD.EmUso);

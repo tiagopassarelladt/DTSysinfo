@@ -2,10 +2,10 @@
 <BorlandProject>
 	<Transactions>
     <Transaction>2022/10/14 16:38:19.000.792,=rtl.dcp</Transaction>
-    <Transaction>2022/10/14 16:38:34.000.553,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Package1.dproj=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\DTSysinfo.dproj</Transaction>
+    <Transaction>2022/10/14 16:38:34.000.553,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\DTSysinfo.dproj=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Package1.dproj</Transaction>
     <Transaction>2022/10/14 16:39:39.000.315,=D:\Dropbox\Componentes\DTSysinfo\DTSysInfo.pas</Transaction>
-    <Transaction>2022/10/14 16:39:57.000.432,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\DTSysinfo.dproj=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Sysinfo.dproj</Transaction>
-    <Transaction>2022/10/14 16:40:01.000.606,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Sysinfo.dproj=D:\Dropbox\Componentes\DTSysinfo\Sysinfo.dproj</Transaction>
+    <Transaction>2022/10/14 16:39:57.000.432,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Sysinfo.dproj=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\DTSysinfo.dproj</Transaction>
+    <Transaction>2022/10/14 16:40:01.000.606,D:\Dropbox\Componentes\DTSysinfo\Sysinfo.dproj=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Sysinfo.dproj</Transaction>
     <Transaction>2022/10/14 16:40:42.000.203,=D:\Dropbox\Componentes\DTSysinfo\DTSysInfoSystem.pas</Transaction>
   </Transactions>
 </BorlandProject>

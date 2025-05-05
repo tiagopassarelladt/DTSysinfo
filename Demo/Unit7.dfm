@@ -12,9 +12,7 @@ object Form7: TForm7
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
     Left = 8
@@ -44,7 +42,7 @@ object Form7: TForm7
   object DTSysinfo1: TDTSysinfo
     iTipoArmazenamento = 0
     iTipoConexao = 0
-    Left = 336
-    Top = 216
+    Left = 288
+    Top = 248
   end
 end

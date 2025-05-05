@@ -2,8 +2,8 @@
 <BorlandProject>
 	<Transactions>
     <Transaction>2022/10/14 16:59:04.000.407,=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Unit7.pas</Transaction>
-    <Transaction>2022/10/14 17:00:16.000.588,D:\Dropbox\Componentes\DTSysinfo\Demo\Unit7.dfm=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Unit7.dfm</Transaction>
-    <Transaction>2022/10/14 17:00:16.000.588,D:\Dropbox\Componentes\DTSysinfo\Demo\Unit7.pas=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Unit7.pas</Transaction>
-    <Transaction>2022/10/14 17:00:18.000.942,D:\Dropbox\Componentes\DTSysinfo\Demo\Project4.dproj=C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Project4.dproj</Transaction>
+    <Transaction>2022/10/14 17:00:16.000.588,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Unit7.dfm=D:\Dropbox\Componentes\DTSysinfo\Demo\Unit7.dfm</Transaction>
+    <Transaction>2022/10/14 17:00:16.000.588,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Unit7.pas=D:\Dropbox\Componentes\DTSysinfo\Demo\Unit7.pas</Transaction>
+    <Transaction>2022/10/14 17:00:18.000.942,C:\Users\Tiago Passarella\Documents\Embarcadero\Studio\Projects\Project4.dproj=D:\Dropbox\Componentes\DTSysinfo\Demo\Project4.dproj</Transaction>
   </Transactions>
 </BorlandProject>

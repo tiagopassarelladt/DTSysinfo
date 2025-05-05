@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <Transactions/>
-  <Default.Personality>
-    <Projects ActiveProject="D:\Dropbox\Componentes\DTSysinfo\Demo\Project4.dproj"/>
-  </Default.Personality>
+	<Transactions/>
+	<Default.Personality>
+		<Projects ActiveProject="D:\Dropbox\Componentes\DTOpenSource\DTSysinfo\Demo\Project4.dproj"/>
+	</Default.Personality>
 </BorlandProject>
